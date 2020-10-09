@@ -18,17 +18,18 @@ class Signin extends React.Component {
                 email: this.state.signInEmail,
                 password: this.state.signInPassword
             })
-        }).then(response=>response.json())
-        .then(data=>{
-            if(data === 'success'){
-                this.props.onRouteChange('home');
-            }
-        })
-        
+        }).then(response => response.json())
+            .then(user => {
+                if (user.id) {
+                    this.props.loadUser(user);
+                    this.props.onRouteChange('home');
+                }
+            })
+
     }
     onEmailChange = (event) => {
         this.setState({ signInEmail: event.target.value });
-        
+
     }
     onPasswordChange = (event) => {
         this.setState({ signInPassword: event.target.value });
@@ -47,7 +48,7 @@ class Signin extends React.Component {
                             </div>
                             <div className="mv3">
                                 <label className="db fw6 lh-copy f6" htmlFor="password" >Password</label>
-                                <input className="b pa2 input-reset ba bg-transparent hover-bg-black hover-white w-100" type="password" name="password" id="password" onChange={this.onPasswordChange}/>
+                                <input className="b pa2 input-reset ba bg-transparent hover-bg-black hover-white w-100" type="password" name="password" id="password" onChange={this.onPasswordChange} />
                             </div>
                         </fieldset>
                         <div className="">
