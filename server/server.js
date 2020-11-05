@@ -5,6 +5,7 @@ const cors = require('cors');
 
 const register = require('./controllers/register');
 const signin = require('./controllers/signin');
+const profile = require('./controllers/profile');
 
 const knex = require('knex')({
     client: 'pg',
@@ -31,20 +32,7 @@ app.post('/signin', (req, res) => { signin.handleSignin(req, res, knex, bcrypt) 
 
 app.post('/register', (req, res) => { register.handleRegister(req, res, knex, bcrypt, saltRounds) })
 
-app.get('/profile/:id', (req, res) => {
-    const { id } = req.params;
-    knex.select('*').from('users').where('id', id)
-        .then(user => {
-            if (user.length) {
-                res.json(user[0])
-            } else {
-                res.status(400).json('Not Found');
-            }
-        })
-        .catch(err => {
-            res.status(400).json('error getting user');
-        })
-})
+app.get('/profile/:id', (req, res) => { profile.handleProfileGet(req, res, knex) })
 
 app.put('/image', (req, res) => {
     const { id } = req.body;
