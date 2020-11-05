@@ -6,6 +6,7 @@ const cors = require('cors');
 const register = require('./controllers/register');
 const signin = require('./controllers/signin');
 const profile = require('./controllers/profile');
+const image = require('./controllers/image');
 
 const knex = require('knex')({
     client: 'pg',
@@ -34,16 +35,7 @@ app.post('/register', (req, res) => { register.handleRegister(req, res, knex, bc
 
 app.get('/profile/:id', (req, res) => { profile.handleProfileGet(req, res, knex) })
 
-app.put('/image', (req, res) => {
-    const { id } = req.body;
-    knex('users').where('id', '=', id)
-        .increment('entries', 1)
-        .returning('entries')
-        .then(entries => {
-            res.json(entries[0]);
-        })
-        .catch(err => res.status(400).json('unable to get entries'))
-})
+app.put('/image', (req,res)=>{image.handleImage(req,res,knex)})
 
 app.listen(3000, () => {
     console.log('app is running on port 3000')
