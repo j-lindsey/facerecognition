@@ -2,6 +2,10 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
 const cors = require('cors');
+
+const register = require('./controllers/register');
+const signin = require('./controllers/signin');
+
 const knex = require('knex')({
     client: 'pg',
     connection: {
@@ -23,54 +27,9 @@ app.get('/', (req, res) => {
     res.send('success');
 })
 
-app.post('/signin', (req, res) => {
-    knex.select('email', 'hash').from('login')
-        .where('email', '=', req.body.email)
-        .then(data => {
-            const isValid = bcrypt.compareSync(req.body.password, data[0].hash);
-            if (isValid) {
-                return knex.select('*').from('users')
-                    .where('email', '=', req.body.email)
-                    .then(user => {
-                        console.log(user);
-                        res.json(user[0])
-                    })
-                    .catch(err => res.status(400).json('unable to get user'))
-            } else {
-                res.status(400).json('wrong credentials');
-            }
-        })
-        .catch(err => res.status(400).json('wrong credentials'))
-})
+app.post('/signin', (req, res) => { signin.handleSignin(req, res, knex, bcrypt) })
 
-app.post('/register', (req, res) => {
-    const { email, name, password } = req.body;
-    const hash = bcrypt.hashSync(password, saltRounds);
-    knex.transaction(trx => {
-        trx.insert({
-            hash: hash,
-            email: email
-        })
-            .into('login')
-            .returning('email')
-            .then(loginEmail => {
-                return trx('users')
-                    .returning('*')
-                    .insert({
-                        email: loginEmail[0],
-                        name: name,
-                        joined: new Date()
-                    }).then(user => {
-                        res.json(user[0]);
-                    })
-
-            })
-            .then(trx.commit)
-            .catch(trx.rollback)
-    })
-        .catch(err => res.status(400).json('unable to register'))
-
-})
+app.post('/register', (req, res) => { register.handleRegister(req, res, knex, bcrypt, saltRounds) })
 
 app.get('/profile/:id', (req, res) => {
     const { id } = req.params;
